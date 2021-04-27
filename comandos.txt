@@ -1,0 +1,588 @@
+
+
+****crear base de datos****
+create database pruebaBD;
+
+
+****eliminar base de datos****
+
+Drop database if exists "nombrebasededatos"
+
+*** crear tabla en base de datos ***
+create table persona(
+	idpersona int not null,
+	nombre varchar(20),
+	Cedula varchar(10));
+
+*** crear registros en una tabla ***
+insert into persona values('1','Hugo','0101200');
+insert into persona (idpersona,nombre) values ('3','Daniel');
+
+**actualizar registros**
+update persona set cedula = '2232', nombre = 'Daniel2' where idpersona = '3'
+
+*** Tipos de datos ***
+-- boolean = true or false
+-- character(n) = cadena de texto
+-- date = fecha
+-- float = flotante
+-- int, integer = entero
+-- decima = numero exacto
+-- time = tiempo en horas minutos y segundos
+-- varchar(n) = cadena de caracteres de tamaño variable
+
+** Consultas PostgreSQL **
+select * from persona;
+select (nombre, cedula) as datos from persona;
+select nombre as Nombres, cedula as datos from persona;
+select nombre from persona where idpersona= '1';
+
+
+** Where y condicionales =, !=, <, > , <=, and, or **
+select * from persona where nombre = 'Hugo';
+select * from persona where nombre != 'Hugo';
+select * from persona where idpersona >= 1;
+select * from persona where idpersona >= 1 and nombre = 'Hugo';
+
+
+** Borrar registros**
+delete from persona where idpersona = '4';
+
+** comentarios en pgadmin4**
+se puede con doble guion para comentar de forma corta y larga con este formato /* codigo/texto */
+--select * from persona;
+--comentarios cortos
+/*
+delete from persona 
+where idpersona = '4';
+*/
+
+** agregar una columna nueva a una tabla**
+alter table persona add column Test varchar(20);
+
+** modificar nombre de una columna nueva a una tabla**
+alter table persona rename column Test to test2;
+
+** eliminar una columna nueva a una tabla**
+alter table persona drop column test2;
+
+
+** modificar atributos de una columna en una tabla**
+alter table persona alter column test set not null;
+alter table persona alter column test set not null;
+alter table persona alter column test type varchar(21);
+
+** agregar llave primaria a una tabla **
+alter table persona add primary key (idpersona);
+
+** auto incrementar llave primaria con serial **
+create table test(
+	idtest serial primary key not null,
+	nombre varchar(20),
+	telefono varchar(10));
+select * from test;
+insert into test (nombre,telefono) values('dan','779923')
+
+** drop y truncate **
+drop elimina la tabla
+truncate esta vacia la tabla pero deja la secuencia de la llave primaria como quedaba
+
+drop table test;
+-- elimina tabla
+truncate table test;
+-- no reinicia serial
+-- elimina y vuelve a crear la tabla
+truncate table test restart identity;
+-- reinicia el serial
+
+** valor por default **
+create table test(
+	idtest serial primary key not null,
+	nombre varchar(20),
+	telefono varchar(11) default 'Desconocido');
+insert into test (nombre, telefono) values('hugo','3232');
+insert into test (nombre) values('hugo');
+select * from test;
+
+** columna temporal **
+create table planilla(
+	nombre varchar ,
+	nid int,
+	salario int);	
+select * from planilla;
+insert into planilla values('hugo',1,200);
+select nombre, salario, (salario + 1500) as Bono from planilla;  --------------------
+update planilla set salario = salario + 1500 where nombre = 'hugo';
+
+** order by **
+select * from persona order by nombre, idpersona desc;
+select * from persona order by nombre desc, idpersona asc;
+select * from persona order by nombre desc;
+select * from persona order by nombre;
+
+** buscar registros con like **
+select * from persona where nombre like '%e%'
+
+** count **
+select count(*) from persona;
+select count(*) from persona
+where nombre like '%e%';
+
+** sumar registros **
+select sum(salario) from planilla;
+select sum(salario) from planilla where nombre like '%a%';
+
+*** Funciones con Registros - Max, Min & Group By ***
+select min(salario) from planilla;
+select max(salario) from planilla;
+select nombre, max(salario) from planilla group by nombre;
+
+** fruncion avg***
+select nid, AVG(salario) from planilla group by nid;
+select AVG(salario) from planilla;
+
+** filtrar por grupos- having **
+having se utiliza para los grupos
+select nombre, salario from planilla where nombre= 'hugo' group by nombre, salario having salario > 1600;
+
+** funcion distinct **
+select distinct nombre from planilla;
+select count(distinct nombre) from planilla;
+
+** rango de registros - between **
+select * from planilla where salario not between 2000 and 5000;
+select * from planilla where salario between 2000 and 5000;
+
+** registringir valores en una tabla unique **
+alter table planilla 
+add constraint UQ_salario
+Unique(salario);
+
+** eliminar restrinccion de una tabla **
+alter table planilla
+drop constraint UQ_salario;
+
+** llaves foraneas**
+CREATE TABLE public.empresa
+(
+    id_codigo integer NOT NULL,
+    nombre_empresa character(50) NOT NULL,
+    PRIMARY KEY (id_codigo)
+)
+
+alter table planilla
+add CodigoEmpresa integer;
+
+alter table planilla
+add constraint  FKtest
+foreign key(CodigoEmpresa)
+references empresas (id_empresa);
+
+update planilla set CodigoEmpresa = '1'
+
+insert into planilla values('hugo',1,100)
+insert into empresas values('3','Hugo´s')
+
+** funciones **
+create or Replace function Suma(num1 int, num2 integer) returns integer
+as 
+$$
+select num1 + num2;
+$$
+language SQL
+
+select Suma('51','150')
+--------------------------------
+
+create function BuscarSalario(varchar) returns Integer
+as
+$$
+select salario from planilla
+where nombre = $1
+$$
+language SQL
+
+select BuscarSalario('dan')
+
+** procedimientos **
+
+create function insertarPersonas() returns void
+as $$
+insert into planilla values('Hugo','1235','1000','1');
+insert into planilla values('Luis','1234','1200','1');
+insert into planilla values('German','1222','1100','2');
+insert into planilla values('Olga','1234','1000','2');
+$$
+language sql
+
+select insertarPersonas();
+
+***********************
+create function buscarInfo(integer) returns planilla
+as $$
+select * from planilla where nid=$1
+$$
+language sql
+
+select buscarInfo(1);
+
+
+*** clausa top en postgresql (limit en postgresql) ****
+select * from planilla limit 5;
+
+
+*** triggers/disparadores PARA BEFORE UPDATE ***
+este trigger sirve para que cada que se actualice en la tabla de planilla se guarde este registro en la tabla de logs_planilla
+
+
+create function SP_test() returns trigger
+as $$
+begin
+
+insert into "logs_planilla" values(old.nombre, old.nid, old.salario, old.codigoempresa);
+return new;
+
+end
+$$
+language plpgsql;
+-----------------------------------------------
+create trigger TR_update before update on planilla
+for each row
+execute procedure SP_test();
+----------------------------------
+update planilla set 
+nombre = 'Hugouno',
+nid = '12333',
+salario = '33332',
+codigoempresa = '2'
+where nombre= 'hugo'
+
+select * from planilla; 
+select * from logs_planilla; 
+
+*** TRIGGERS PARA AFTER INSERT ***
+create function SP_TR_Insert() returns trigger
+as $$
+declare 
+
+usuario varchar(50) := User;
+fecha date := current_date;
+tiempo Timestamp := current_timestamp;
+
+begin
+insert into "logs_planilla" values(new.nombre, new.nid, new.salario, new.codigoempresa, usuario, fecha, tiempo);
+return new;
+end
+$$
+language plpgsql;
+
+---------------------
+
+create trigger TR_insert after insert on planilla
+for each row
+execute procedure SP_TR_Insert();
+-------------
+
+insert into planilla values('aaaa',1,2000,2); 
+
+** condicion in **
+select * from planilla
+where codigoempresa in (1,2);
+
+** limit y offset **
+// offset: para que comience a mostrar a partir del indice del offset
+select * from planilla
+limit 3
+offset 2;
+
+
+** vistas **
+create view view_datafrompersona 
+as select nombre, nid from planilla;
+
+select * from view_datafrompersona;
+
+** union con vistas **
+create view view_union
+as
+select nombre, nid, 'Planilla' as origen from planilla
+union all
+select nombre, idpersona, 'Persona' from persona
+order by origen;
+
+select * from view_union;
+
+** INNER JOIN **
+select * from planilla
+inner join empresas 
+on planilla.codigoempresa=empresas.id_empresa;
+
+select * from planilla as a1
+inner join empresas as b1
+on a1.codigoempresa=b1.id_empresa;
+
+** LEFT JOIN **
+select * from planilla as a1
+left join empresas as b1
+on a1.codigoempresa=b1.id_empresa;
+
+** right join **
+select * from planilla as a1
+right join empresas as b1
+on a1.codigoempresa=b1.id_empresa;
+
+** full join **
+select * from planilla as a1
+full join empresas as b1
+on a1.codigoempresa=b1.id_empresa;
+
+** Como ver todas las combinaciones posibles - CROSS JOIN **
+select * from planilla as a1
+cross join empresas as b1
+order by nombre
+
+** WITH CHECK OPTION **
+restringir cambios con respecto a la vista
+
+create view view_persona1 as
+select * from persona
+where nombre = 'Hugo'
+with check option
+
+select * from view_persona
+
+insert into view_persona1 values (4,'Hugo','1231','123')
+
+*** funciones matematicas ***
+abs() //valor absoluto
+cbrt() // raiz cubica
+ceiling() // redondea hacia arriba
+floor() // redondea hacia abajo
+power(x,y) // potencia
+round() // redondea de forma normal, con o sin decimales
+sign() // devuelve 1 si el numero que ingresamos es positivo, negativo es igual a -1 y cero es igual a 0
+sqrt() // raiz cuadrada
+mod(x,y) // nos devuelve el residuo de una division
+pi() // devuelve el numero pi
+random() //  numero random entre 0 y 1
+trunc() // no sirve para nada (simplificar numero)
+
+select abs(-30)
+select cbrt(27))
+select ceiling(27.1)
+select floor(27.1)
+select power(3,2)
+select round(24.815,2)
+select sign(1)
+select sqrt(9)
+select mod(33,2)
+select pi()
+select random()
+select trunc(-57.35321 ,3)
+
+
+*** funciones para manejar cadenas de caracteres ***
+char_legth() // cuenta caracteres 
+upper() // vuelve todo mayuscula
+lower() // vuelve todo minuscula
+position(string in string) // devuelve la posicion de un caracteres con respecto a una cadena
+substring(string from int for int) // devuelve caracteres dentro de un rango especificado
+trim() // elimina espacios
+ltrim() // eliminar espacios o caracteres a elegir a la izq
+rtrim() // eliminar espacios o caracteres a elegir a la derecha
+substr() // muestra caracteres apartir de un indice
+lpad() // recibe 3 parametros, una cadena, un numero, un caracter, cuenta la cadera y con el numero cuenta para que con el segundo caracter lo escribe para ver esa longitud
+rpad() // lo mismo que lpad pero para la derecha
+
+select char_length('Hola mundo')
+select upper('Hola mundo')
+select lower('Hola mundo')
+select position('o' in 'Hola mundo')
+select substring('Hola mundo' from 2 for 4)
+select trim(' Hola mundo')
+select trim(leading '-' from '--Hola mundo--')
+select trim(trailing '-' from '--Hola mundo--')
+select trim(both '-' from '--Hola mundo--')
+select ltrim('  hola mundo')
+select ltrim('__hola mundo','__')
+select rtrim('  hola mundo  ')
+select rtrim('__hola mundo___','__')
+select substr('Hola mundo___', 5)
+select substr('Hola mundo___', 5,8)
+select lpad('Hola mundo', 15, '-')
+select rpad('Hola mundo', 15, '-')
+ 
+*** funciones para fechas y tiempo ***
+current_date // toma fecha
+current_time // toma hora actual
+current_timestamp // toma fecha y hora
+extract // extraemos mes, año o dia de uan fecha
+
+select current_date;
+select current_time;
+select current_timestamp;
+select extract (year from current_timestamp);
+select extract (month from current_timestamp);
+select extract (century from current_timestamp);
+select extract (quarter from current_timestamp);
+
+*** operador para controlar valores nulos**
+select * from persona 
+where nombre is not null;
+
+select * from persona 
+where nombre is null;
+
+** secuencias **
+create sequence sec_Indice
+start with 1
+increment by 2
+minvalue 1
+maxvalue 100
+cycle;
+
+alter sequence sec_indice
+start with 1
+increment by 30
+minvalue 1
+maxvalue 100
+restart 10
+no cycle;
+
+drop sequence sec_indice;
+
+select * from sec_indice;
+select nextval('sec_indice');
+
+** sub consulta dentro del encabezado**
+select nombre, 
+(select nombre_empresa from empresas 
+ where empresas.id_empresa=planilla.codigoempresa
+ and empresas.nombre_empresa='Agrega') 
+ from planilla;
+
+** sub consulta dentro del where **
+select nombre from Planilla 
+where codigoempresa = (select id_empresa from empresas where nombre_empresa = 'Agrega' limit 1);
+
+** sub consulta con in y where **
+select nombre from Planilla
+ where codigoempresa in (select id_empresa from empresas where nombre_empresa in ('Agrega','Ficohsa'));
+
+** subconsultas en update y detele**
+update planilla set 
+codigoempresa = 
+(select id_empresa from empresas where nombre_empresa = 'Hugo´s')
+where nombre = 'dan';
+
+update planilla set 
+salario =  2200
+where codigoempresa in (select id_empresa from empresas where nombre_empresa in ('Hugo´s','Ficohsa') );
+
+delete from planilla 
+where codigoempresa = (select id_empresa from empresas where nombre_empresa = 'Hugo´s');
+
+** insert con subconsultas **
+insert into planilla_salarios_max 
+select codigoempresa, max(salario) from planilla
+where codigoempresa = codigoempresa
+group by codigoempresa;
+
+** variables **
+do $$
+declare 
+x int :=50;
+y int :=100;
+z int ;
+
+Begin
+z := x + y;
+Raise Notice 'el resultado de la operacion es %',z;
+
+end $$;
+
+** condicional if ***
+do $$
+begin
+
+if exists(select * from planilla where nid=1222) then
+delete from planilla where nid = 1222;
+Raise Notice 'Registro eliminado';
+else
+Raise Notice 'Registro inexistente';
+end if;
+
+end $$
+
+** condicional while **
+do $$
+declare x int := (select count(*) from planilla);
+		y int := 0;
+begin
+
+while (y < x)
+loop
+Raise Notice 'SIUUUUUU %', y;
+y:= y + 1;
+end loop;
+
+end $$
+
+** case ***
+do $$
+declare x int := (select count(*) from planilla);
+		y int := 0;
+begin
+
+while (y < x)
+loop
+Raise Notice 'SIUUUUUU %', y;
+y:= y + 1;
+end loop;
+
+end $$
+
+
+*** IMPORTAR UNA BASE DE DATOS *****
+nos vamos a nuestra base
+click derecho
+backup
+ponemos la direccion a donde guardaro nuestro back
+ponemos nombre del backup
+cambiamos rol a postgres
+
+
+*** EXPORTAR UNA TABLA A CSV **
+click derecho a la table y exportar
+ponemos nombre y ejecutar
+para importar es lo mismo solo cambiamos a importar
+
+*** crear cursor **
+variable donde guardamos una consulta.
+do $$
+declare
+		registro Record;
+		Cur_planilla Cursor for select * from planilla order by nombre;
+begin
+
+Open Cur_planilla;
+Fetch Cur_planilla into registro;
+While(FOUND) loop
+Raise Notice 'Nombre: %, salario: %', registro.nombre, registro.salario;
+Fetch Cur_planilla into registro;
+end loop;
+end $$
+Language 'plpgsql';
+---------------------------------------------------------------
+do $$
+declare
+		registro Record;
+		Cur_planilla Cursor for select * from planilla order by nombre;
+begin
+
+for registro in Cur_planilla loop
+Raise Notice 'Nombre: %, salario: %', registro.nombre, registro.salario;
+
+end loop;
+end $$
+Language 'plpgsql';
